@@ -27,7 +27,7 @@ class CommentAnalysis:
 
     def comment_emotion_detection(self):
         self.data['emotion'] = self.data['Clean Comment'].apply(predict_emotions)
-        df =  self.data['emotion'].value_counts()
+        df = self.data['emotion'].value_counts()
         return df.to_dict()
 
 
