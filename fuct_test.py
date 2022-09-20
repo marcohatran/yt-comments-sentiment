@@ -2,6 +2,7 @@ from services.Comment.comment import Comment
 from services.Comment.data_comment import DataComment
 from services.Lda.lda_comment import topic_modeling
 from services.Sentiment.sentiment import sentiments
+from services.Emotion.comment_emotion import predict_emotions
 
 
 

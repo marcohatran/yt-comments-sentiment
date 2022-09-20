@@ -2,7 +2,7 @@ from services.Comment.data_comment import DataComment
 from services.Lda.lda_comment import topic_modeling
 from services.Sentiment.sentiment import sentiments
 from services.WordCloud.comment_word_cloud import word_cloud
-from services.Emotion.comment_emotion import CommentEmotion
+from services.Emotion.comment_emotion import predict_emotions
 
 class CommentAnalysis:
     def __init__(self, youtube_api_key, video_id):
@@ -21,10 +21,14 @@ class CommentAnalysis:
         positive_comments_str = (' '.join(positive_comments['Clean Comment']))
         negative_comments_str = (' '.join(negative_comments['Clean Comment']))
         neutral_comments_str = (' '.join(neutral_comments['Clean Comment']))
-        print(word_cloud(positive_comments_str))
         return {"positive_word_cloud": word_cloud(positive_comments_str),
                 "negative_word_cloud": word_cloud(negative_comments_str),
                 "neutral_word_cloud": word_cloud(neutral_comments_str)}
+
+    def comment_emotion_detection(self):
+        self.data['emotion'] = self.data['Clean Comment'].apply(predict_emotions)
+        df =  self.data['emotion'].value_counts()
+        return df.to_dict()
 
 
 
