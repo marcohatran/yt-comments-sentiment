@@ -3,6 +3,7 @@ from services.Lda.lda_comment import topic_modeling
 from services.Sentiment.sentiment import sentiments
 from services.WordCloud.comment_word_cloud import word_cloud
 from services.Emotion.comment_emotion import predict_emotions
+from services.Topic.topicmapping import TopicMapping
 
 class CommentAnalysis:
     def __init__(self, youtube_api_key, video_id):
@@ -14,7 +15,7 @@ class CommentAnalysis:
         return topic_modeling(self.data)
 
     def word_cloud_for_comment_sentiment(self):
-        data_sentiment_all,positive, negative, neutral  = sentiments(self.data)
+        data_sentiment_all, positive, negative, neutral = sentiments(self.data)
         positive_comments = data_sentiment_all[data_sentiment_all['Analysis'] == 'Positive']
         negative_comments = data_sentiment_all[data_sentiment_all['Analysis'] == 'Negative']
         neutral_comments = data_sentiment_all[data_sentiment_all['Analysis'] == 'Neutral']
@@ -30,6 +31,12 @@ class CommentAnalysis:
         df = self.data['emotion'].value_counts()
         return df.to_dict()
 
+    def topic_modeling(self):
+        topic = TopicMapping()
+        return topic.fetch_topic(self.data, 4)
+
+
+
 
 
 
@@ -38,7 +45,7 @@ class CommentAnalysis:
 if __name__ == '__main__':
     comment_analysis = CommentAnalysis(youtube_api_key='AIzaSyAvDyM4PVSaEWGheInZyvD7JWuWttBHqfg',
                                        video_id='-duwSMIgNMU')
-    print(comment_analysis.comment_emotion_detection())
+    print(comment_analysis.topic_modeling())
 
 
 
