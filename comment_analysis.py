@@ -4,6 +4,7 @@ from services.Sentiment.sentiment import sentiments
 from services.WordCloud.comment_word_cloud import word_cloud
 from services.Emotion.comment_emotion import predict_emotions
 from services.Topic.topicmapping import TopicMapping
+from services.WordCloud.image_wordcloud import wordcloud_by_comments
 
 class CommentAnalysis:
     def __init__(self, youtube_api_key, video_id):
@@ -19,12 +20,12 @@ class CommentAnalysis:
         positive_comments = data_sentiment_all[data_sentiment_all['Analysis'] == 'Positive']
         negative_comments = data_sentiment_all[data_sentiment_all['Analysis'] == 'Negative']
         neutral_comments = data_sentiment_all[data_sentiment_all['Analysis'] == 'Neutral']
-        positive_comments_str = (' '.join(positive_comments['Clean Comment']))
-        negative_comments_str = (' '.join(negative_comments['Clean Comment']))
-        neutral_comments_str = (' '.join(neutral_comments['Clean Comment']))
-        return {"positive_word_cloud": word_cloud(positive_comments_str),
-                "negative_word_cloud": word_cloud(negative_comments_str),
-                "neutral_word_cloud": word_cloud(neutral_comments_str)}
+        # positive_comments_str = (' '.join(positive_comments['Clean Comment']))
+        # negative_comments_str = (' '.join(negative_comments['Clean Comment']))
+        # neutral_comments_str = (' '.join(neutral_comments['Clean Comment']))
+        return {"positive_word_cloud": wordcloud_by_comments(positive_comments['Clean Comment'], 'positive wordcloud'),
+                "negative_word_cloud": wordcloud_by_comments(negative_comments['Clean Comment'], 'negative wordcloud'),
+                "neutral_word_cloud": wordcloud_by_comments(neutral_comments['Clean Comment'], 'neutral wordcloud')}
 
     def comment_emotion_detection(self):
         self.data['emotion'] = self.data['Clean Comment'].apply(predict_emotions)
@@ -45,7 +46,7 @@ class CommentAnalysis:
 if __name__ == '__main__':
     comment_analysis = CommentAnalysis(youtube_api_key='AIzaSyAvDyM4PVSaEWGheInZyvD7JWuWttBHqfg',
                                        video_id='-duwSMIgNMU')
-    print(comment_analysis.topic_modeling())
+    print(comment_analysis.word_cloud_for_comment_sentiment())
 
 
 
