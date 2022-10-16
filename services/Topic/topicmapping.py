@@ -8,8 +8,9 @@ import streamlit as st
 import contractions
 
 from wordcloud import WordCloud
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.decomposition import LatentDirichletAllocation as LDA
+from sklearn.decomposition import NMF
 
 
 class TopicMapping:
@@ -68,6 +69,7 @@ class TopicMapping:
         topic_list = []
         words = count_vectorizer.get_feature_names()
         for topic_idx, topic in enumerate(model.components_):
+            print(topic)
             print("\nTopic #%d:" % topic_idx)
             print(" ".join([words[i] for i in topic.argsort()[:-n_top_words - 1:-1]]))
             topic_list.append(" ".join([words[i] for i in topic.argsort()[:-n_top_words - 1:-1]]))
@@ -81,9 +83,45 @@ class TopicMapping:
         return topic_list
 
     def fetch_topic(self, df, no_of_topics):
-        with st.spinner('Generating topics...'):
-            comments, result = self.load_dataset(df)
-            count_vectorizer = CountVectorizer(stop_words='english')
-            count_data = count_vectorizer.fit_transform(comments)
-            topics = self.generate_topic(no_of_topics, 9, count_vectorizer, count_data)
-            return topics
+        comments, result = self.load_dataset(df)
+        count_vectorizer = CountVectorizer(stop_words='english')
+        count_data = count_vectorizer.fit_transform(comments)
+        topics = self.generate_topic(no_of_topics, 9, count_vectorizer, count_data)
+        return topics
+
+    @staticmethod
+    def display_topics(model, features, no_top_words=5):
+        topic_list = []
+        all_words = features.get_feature_names()
+        for topic, words in enumerate(model.components_):
+            total = words.sum()
+            largest = words.argsort()[::-1]  # invert sort order
+            # topic_list.append(" ".join([all_words[i] for i in topic.argsort()[:-no_top_words - 1:-1]]))
+            # topic_list.append(" ".join([all_words[largest[i]] for i in range(0, no_top_words)]))
+            topic_result = {"topic_number": topic,
+                            "topic_keywords": " ".join([all_words[largest[i]] for i in range(0, no_top_words)])}
+            topic_list.append(topic_result)
+        return topic_list
+
+
+
+    def fetch_topic_tfidf(self, df, no_of_topics):
+        comments, result = self.load_dataset(df)
+        count_vectorizer = CountVectorizer(stop_words='english')
+        count_data = count_vectorizer.fit_transform(comments)
+        count_text_vectors = count_data
+        tfidf_text_vectorizer = TfidfVectorizer(stop_words='english')
+        tfidf_text_vectors = tfidf_text_vectorizer.fit_transform(comments)
+        lda_text_model = LDA(n_components=no_of_topics, random_state=42)
+        W_lda_text_matrix = lda_text_model.fit_transform(count_text_vectors)
+        H_lda_text_matrix = lda_text_model.components_
+        lda_result_df = pd.DataFrame(W_lda_text_matrix)
+        comp_df = df
+        comp_df['topic_number'] = lda_result_df.idxmax(axis=1)
+        print(comp_df.columns)
+        topic_keywords = self.display_topics(lda_text_model, tfidf_text_vectorizer)
+        full_topic_result = {"topic_all": topic_keywords,
+                             "topic_details": comp_df[['Comment', 'topic_number']].to_dict('records')
+                             }
+
+        return full_topic_result
